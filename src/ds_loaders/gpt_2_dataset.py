@@ -1,5 +1,5 @@
 import json
-from typing import Literal
+# from typing import Literal
 
 import torch
 from torch.utils.data import Dataset
@@ -10,7 +10,8 @@ from ..utils.deep_tools import get_model_tokenizer
 class GPT21024DatasetTok(Dataset):
     def __init__(self,
                  path: str,
-                 mode=Literal['train', 'test', 'val'],
+                #  mode=Literal['train', 'test', 'val'],
+                 mode: str,                     # 'train', 'test', 'val'
                  length=None):
         self.tokenizer = get_model_tokenizer()
         with open(path, 'r') as ds_f:
@@ -45,7 +46,8 @@ class GPT21024DatasetTok(Dataset):
 class GPT21024Dataset(Dataset):
     def __init__(self,
                  path: str,
-                 mode=Literal['train', 'test', 'val'],
+                 #  mode=Literal['train', 'test', 'val'],
+                 mode: str,                     # 'train', 'test', 'val'
                  length=None):
         self.tokenizer = get_model_tokenizer()
         with open(path, 'r') as ds_f:

@@ -2,6 +2,9 @@
 Script to fine tune a model
 """
 
+import os
+import sys
+sys.path.append(os.path.join(os.getcwd(), "..", ".."))
 import json
 import time
 from argparse import ArgumentParser
@@ -13,7 +16,7 @@ import wandb
 from pytorch_transformers import GPT2LMHeadModel, AdamW, WarmupLinearSchedule
 from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader, RandomSampler
-from tqdm import tnrange, tqdm
+from tqdm import trange, tqdm
 
 from src.ds_loaders.gpt_2_dataset import GPT21024DatasetTok
 from src.utils.deep_tools import set_seed, get_model_tokenizer
@@ -44,6 +47,9 @@ def train(model, tokenizer, train_dataset, valid_dataset, ignore_index, cnf):
     # """
 
     # - Initialize all the stuff
+    if not os.path.exists(cnf["model_dir"]):
+        os.makedirs(cnf["model_dir"])
+
     train_sampler = RandomSampler(train_dataset)
     train_dl = DataLoader(train_dataset, sampler=train_sampler, batch_size=cnf["batch_size"],
                           num_workers=cnf["num_workers"])
@@ -55,7 +61,7 @@ def train(model, tokenizer, train_dataset, valid_dataset, ignore_index, cnf):
     tr_loss, logging_loss = 0.0, 0.0
 
     model.zero_grad()
-    train_iterator = tnrange(int(cnf["num_train_epochs"]), desc="Epoch")
+    train_iterator = trange(int(cnf["num_train_epochs"]), desc="Epoch")
     if cnf["seed"] is not None:
         set_seed(cnf)
 
@@ -90,9 +96,9 @@ def train(model, tokenizer, train_dataset, valid_dataset, ignore_index, cnf):
                 scheduler.step()  # Update learning rate schedule
                 model.zero_grad()
                 global_step += 1
-                # wandb.log({"lr": scheduler.get_lr(), "loss": (tr_loss - logging_loss)/cnf["gradient_accumulation_steps"]})
-                # logging_loss = tr_loss
-                wandb.log({"lr": scheduler.get_lr(), "loss": tr_loss})
+                wandb.log({"lr": scheduler.get_lr(), "loss": (tr_loss - logging_loss)/cnf["gradient_accumulation_steps"]})
+                logging_loss = tr_loss
+                # wandb.log({"lr": scheduler.get_lr(), "loss": tr_loss})
                 print("loss:", loss.item(), end='\n\n')
 
                 # if (step + 1)/cnf["gradient_accumulation_steps"] == 1.0:
@@ -105,12 +111,16 @@ def train(model, tokenizer, train_dataset, valid_dataset, ignore_index, cnf):
             #     writer.add_scalar('eval_{}'.format(key), value, global_step)
             # print('After', global_step+1,'updates: ', end='\n\n')
             # generate_sample(valid_dataset, tokenizer, num=2, eval_step=True)
+        # model.save(os.path.join(cnf["weights_dir"], f"model_{step}.pt"))
+        torch.save(model.state_dict(), os.path.join(cnf["model_dir"], f"model_{step}.pt"))
+    
 
 
 def main(args):
     cnf = json.load(open(args.config, 'r'))
+    cnf["model_dir"] += "_" + args.name
     LOGGER.info(f"config: ")
-    LOGGER.into(pformat(cnf))
+    LOGGER.info(pformat(cnf))
 
     LOGGER.debug(f"Init wand")
     wb_config = init_wandb(args.name, cnf)
@@ -134,8 +144,11 @@ def main(args):
 
     LOGGER.info("Start training")
     start = time.time()
-    train(args, model, tokenizer, train_data, valid_data, ignore_idx)
+    train(model, tokenizer, train_data, valid_data, ignore_idx, cnf)
     LOGGER.info('total time: ', (time.time() - start) / 60, " minutes", end='\n\n')
+
+    torch.save(model.state_dict(), os.path.join(cnf["model_dir"], f"model_final.pt"))
+
 
 
 if __name__ == '__main__':
@@ -144,7 +157,7 @@ if __name__ == '__main__':
     parser.add_argument("--ds_path", type=str, required=True)
     parser.add_argument("--config", type=str, required=True)
     parser.add_argument("--train_size", type=int, default=None, help="clips ds")
-    parser.add_argument("--val_size", type=str, default=None, help="clips ds")
+    parser.add_argument("--val_size", type=int, default=None, help="clips ds")
     parser.add_argument("--name", type=str)
 
     args = parser.parse_args()
