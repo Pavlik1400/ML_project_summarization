@@ -13,9 +13,15 @@ Libs:
   - `pip install datasets`
 - pytorch_transformers (to get models)
   - `pip install pytorch-transformers`
+- the hugging face transformers for tokenization:
+  - `conda install -c conda-forge transformers`
+  - `pip install transformers`
 - sklearn
   - `conda install -c conda-forge scikit-learn`
   - `pip install scikit-learn`
 - tqdm
   - `conda install tqdm`
   - `pip install tqdm`
+- matplotlib
+ - `conda install -c conda-forge matplotlib`
+ - `pip install matplotlib`
