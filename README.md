@@ -1,0 +1,21 @@
+Libs:
+- [torch + cuda](https://pytorch.org/get-started/locally/)
+  - `pip3 install torch torchvision torchaudio`
+  - `conda install pytorch torchvision torchaudio cudatoolkit=10.2 -c pytorch`
+- tensorflow-gpu
+  - `conda install -c anaconda tensorflow-gpu`
+  - `pip install tensorflow-gpu`
+- sumy (for classical approaches)
+  - `conda install -c conda-forge sumy `
+  - `pip install sumy`
+- datasets (the hugging face for metrics and datasets)
+  - `conda install -c conda-forge datasets`
+  - `pip install datasets`
+- pytorch_transformers (to get models)
+  - `pip install pytorch-transformers`
+- sklearn
+  - `conda install -c conda-forge scikit-learn`
+  - `pip install scikit-learn`
+- tqdm
+  - `conda install tqdm`
+  - `pip install tqdm`
