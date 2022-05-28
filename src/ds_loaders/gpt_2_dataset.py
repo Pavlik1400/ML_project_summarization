@@ -4,7 +4,7 @@ from typing import Literal
 import torch
 from torch.utils.data import Dataset
 
-from ..utils.deep_tools import get_gpt2_tokenizer
+from ..utils.deep_tools import get_model_tokenizer
 
 
 class GPT21024DatasetTok(Dataset):
@@ -12,7 +12,7 @@ class GPT21024DatasetTok(Dataset):
                  path: str,
                  mode=Literal['train', 'test', 'val'],
                  length=None):
-        self.tokenizer = get_gpt2_tokenizer()
+        self.tokenizer = get_model_tokenizer()
         with open(path, 'r') as ds_f:
             ds = json.load(ds_f)
             if mode == 'train':
@@ -47,7 +47,7 @@ class GPT21024Dataset(Dataset):
                  path: str,
                  mode=Literal['train', 'test', 'val'],
                  length=None):
-        self.tokenizer = get_gpt2_tokenizer()
+        self.tokenizer = get_model_tokenizer()
         with open(path, 'r') as ds_f:
             ds = json.load(ds_f)
             if mode == 'train':
