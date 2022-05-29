@@ -14,6 +14,7 @@ from src.ds_loaders.ds_loader import DSLoader
 from src.utils.deep_tools import get_model_tokenizer
 import json
 from transformers import GPT2Tokenizer
+import pickle
 
 
 def model_tokenize_save_less_n(loader: DSLoader, path: str, n: int, tokenizer, clip_idx=-1):
@@ -53,7 +54,10 @@ def model_tokenize_save_less_n(loader: DSLoader, path: str, n: int, tokenizer, c
     print(f"Number of test entries: {len(res['test'])}")
 
     with open(path, 'w') as f:
-        json.dump(res, f, indent=4)
+        if path.endswith("json"):
+            json.dump(res, f, indent=4)
+        else:
+            pickle.dump(res, f)
 
 
 def main(args):
