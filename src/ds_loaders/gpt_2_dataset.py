@@ -8,13 +8,15 @@ from ..utils.deep_tools import get_model_tokenizer
 import pickle
 
 
-class GPT21024DatasetTokGPU(Dataset):
+class MoodelDatasetTokGPU(Dataset):
     def __init__(self,
                  path: str,
                  #  mode=Literal['train', 'test', 'val'],
                  mode: str,  # 'train', 'test', 'val'
-                 length=None):
+                 length=None,
+                 token_size=1024):
         self.tokenizer = get_model_tokenizer()
+        self.token_size = token_size
 
         print(f"Loading ds...")
         if path.endswith("json"):
@@ -42,7 +44,7 @@ class GPT21024DatasetTokGPU(Dataset):
         self.ds = []
         self.sum_indecies = []
         for idx in range(self.len):
-            text = self.tokenizer.encode(self.tokenizer.pad_token) * 1024
+            text = self.tokenizer.encode(self.tokenizer.pad_token) * self.token_size
             content = ds[idx]['document'] + self.tokenizer.encode(self.tokenizer.sep_token) + ds[idx]['summary']
             text[:len(content)] = content
             text = torch.tensor(text)
@@ -57,13 +59,15 @@ class GPT21024DatasetTokGPU(Dataset):
         return sample
 
 
-class GPT21024DatasetTok(Dataset):
+class ModelDatasetTok(Dataset):
     def __init__(self,
                  path: str,
                 #  mode=Literal['train', 'test', 'val'],
                  mode: str,                     # 'train', 'test', 'val'
-                 length=None):
+                 length=None,
+                 token_size=1024):
         self.tokenizer = get_model_tokenizer()
+        self.token_size = token_size
         with open(path, 'r') as ds_f:
             ds = json.load(ds_f)
             if mode == 'train':
@@ -85,7 +89,7 @@ class GPT21024DatasetTok(Dataset):
         return self.len
 
     def __getitem__(self, idx):
-        text = self.tokenizer.encode(self.tokenizer.pad_token) * 1024
+        text = self.tokenizer.encode(self.tokenizer.pad_token) * self.token_size
         content = self.ds[idx]['document'] + self.tokenizer.encode(self.tokenizer.sep_token) + self.ds[idx]['summary']
         text[:len(content)] = content
         text = torch.tensor(text)
@@ -93,46 +97,46 @@ class GPT21024DatasetTok(Dataset):
         return sample
 
 
-class GPT21024Dataset(Dataset):
-    def __init__(self,
-                 path: str,
-                 #  mode=Literal['train', 'test', 'val'],
-                 mode: str,                     # 'train', 'test', 'val'
-                 length=None):
-        self.tokenizer = get_model_tokenizer()
-        with open(path, 'r') as ds_f:
-            ds = json.load(ds_f)
-            if mode == 'train':
-                self.ds = ds['train'][:length]
-            elif mode == 'val':
-                self.ds = ds['val'][:length]
-            elif mode == 'test':
-                self.ds = ds['test'][:length]
-            else:
-                raise ValueError(f"Incorrect mode: {mode}")
-
-        self.mode = mode
-        if length is None:
-            self.len = len(self.ds)
-        else:
-            self.len = length
-
-    def __len__(self):
-        return self.len
-
-    def __getitem__(self, idx):
-        text = self.tokenizer.encode(self.tokenizer.pad_token) * 1024
-        content = self.tokenizer.encode(self.ds[idx]['document']) + \
-                  self.tokenizer.encode(self.tokenizer.sep_token) + \
-                  self.tokenizer.encode(self.ds[idx]['summary'])
-        text[:len(content)] = content
-        # text = self.ds[idx]
-        text = torch.tensor(text)
-        sample = {'document': text, 'sum_idx': len(self.ds[idx]['document'])}
-        return sample
-
-
-
+# class GPT21024Dataset(Dataset):
+#     def __init__(self,
+#                  path: str,
+#                  #  mode=Literal['train', 'test', 'val'],
+#                  mode: str,                     # 'train', 'test', 'val'
+#                  length=None):
+#         self.tokenizer = get_model_tokenizer()
+#         with open(path, 'r') as ds_f:
+#             ds = json.load(ds_f)
+#             if mode == 'train':
+#                 self.ds = ds['train'][:length]
+#             elif mode == 'val':
+#                 self.ds = ds['val'][:length]
+#             elif mode == 'test':
+#                 self.ds = ds['test'][:length]
+#             else:
+#                 raise ValueError(f"Incorrect mode: {mode}")
+#
+#         self.mode = mode
+#         if length is None:
+#             self.len = len(self.ds)
+#         else:
+#             self.len = length
+#
+#     def __len__(self):
+#         return self.len
+#
+#     def __getitem__(self, idx):
+#         text = self.tokenizer.encode(self.tokenizer.pad_token) * 1024
+#         content = self.tokenizer.encode(self.ds[idx]['document']) + \
+#                   self.tokenizer.encode(self.tokenizer.sep_token) + \
+#                   self.tokenizer.encode(self.ds[idx]['summary'])
+#         text[:len(content)] = content
+#         # text = self.ds[idx]
+#         text = torch.tensor(text)
+#         sample = {'document': text, 'sum_idx': len(self.ds[idx]['document'])}
+#         return sample
+#
+#
+#
 
 
 

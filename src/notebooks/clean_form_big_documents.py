@@ -17,7 +17,14 @@ from transformers import GPT2Tokenizer
 import pickle
 
 
-def model_tokenize_save_less_n(loader: DSLoader, path: str, n: int, tokenizer, clip_idx=-1):
+def model_tokenize_save_less_n(
+        loader: DSLoader,
+        path: str,
+        n: int,
+        tokenizer,
+        clip_idx=-1,
+        to_lower=False
+):
 
     def _sub_tokenize(X, y, msg=""):
         print(msg)
@@ -28,6 +35,10 @@ def model_tokenize_save_less_n(loader: DSLoader, path: str, n: int, tokenizer, c
 
             if 0 < clip_idx <= k:
                 return res
+
+            if to_lower:
+                doc = doc.lower()
+                summ = summ.lower()
 
             doc_tok = tokenizer.encode(doc)
             summ_tok = tokenizer.encode(summ)
@@ -72,6 +83,8 @@ def main(args):
         raise ValueError(f"Incorrect ds type: {args.type}")
     ds_loader.load()
 
+    print(f"TO_LOWER: {args.to_lower}")
+
     print(f"Loading {args.model} tokenizer...")
     tokenizer = get_model_tokenizer(args.model)
 
@@ -81,6 +94,7 @@ def main(args):
         n=args.n,
         tokenizer=tokenizer,
         clip_idx=args.size,
+        to_lower=args.lower()
     )
 
 
@@ -92,5 +106,6 @@ if __name__ == '__main__':
                         help="Make sure hugging face has tokenizer for it and pytorch_transformers a model")
     parser.add_argument("--size", type=int, default=-1, help="Size of dataset (clips it)")
     parser.add_argument("--save_path", type=str, help="Where to save ds. Should has extension .json")
+    parser.add_argument("--to_lower", action="store_const", const=True, help="call to_lower on the model")
     args = parser.parse_args()
     main(args)

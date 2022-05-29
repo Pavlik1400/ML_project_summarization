@@ -14,14 +14,27 @@ from typing import Dict
 
 import torch
 import wandb
-from pytorch_transformers import GPT2LMHeadModel, AdamW, WarmupLinearSchedule
+from pytorch_transformers import AdamW, WarmupLinearSchedule#, GPT2LMHeadModel
 from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from tqdm import trange, tqdm
 
-from src.ds_loaders.gpt_2_dataset import GPT21024DatasetTok, GPT21024DatasetTokGPU
+from src.ds_loaders.gpt_2_dataset import ModelDatasetTok, MoodelDatasetTokGPU
 from src.utils.deep_tools import set_seed, get_model_tokenizer
 from src.utils.logger import LOGGER
+
+from transformers import GPT2LMHeadModel, OpenAIGPTLMHeadModel
+from transformers import GPT2Tokenizer, OpenAIGPTTokenizer
+
+MODELS = {
+    "gpt2": GPT2LMHeadModel,
+    "openai-gpt": OpenAIGPTLMHeadModel
+}
+
+TOKENIZERS = {
+    "gpt2": GPT2Tokenizer,
+    "openai-gpt": OpenAIGPTTokenizer
+}
 
 
 # from tensorboardX import SummaryWriter
@@ -164,14 +177,14 @@ def main(args):
     wb_config = init_wandb(args.name, cnf)
 
     LOGGER.debug(f"Create {args.model} tokenizer")
-    tokenizer = get_model_tokenizer(args.model)
+    tokenizer = get_model_tokenizer(args.model, tok=TOKENIZERS[args.model])
     ignore_idx = tokenizer.pad_token_id
 
     LOGGER.debug("Load train data")
-    train_data = GPT21024DatasetTokGPU(args.ds_path, mode="train", length=args.train_size)
+    train_data = MoodelDatasetTokGPU(args.ds_path, mode="train", length=args.train_size, token_size=args.token_size)
 
     LOGGER.debug("Load validation data")
-    valid_data = GPT21024DatasetTokGPU(args.ds_path, mode="val", length=args.val_size)
+    valid_data = MoodelDatasetTokGPU(args.ds_path, mode="val", length=args.val_size, token_size=args.token_size)
 
     LOGGER.debug(f"Create {args.model} model")
     model = GPT2LMHeadModel.from_pretrained(args.model)
@@ -188,7 +201,6 @@ def main(args):
     torch.save(model.state_dict(), os.path.join(cnf["model_dir"], f"model_final.pt"))
 
 
-
 if __name__ == '__main__':
     parser = ArgumentParser("script that trains given model with given dataset")
     parser.add_argument("--model", type=str, default="gpt2")
@@ -196,6 +208,7 @@ if __name__ == '__main__':
     parser.add_argument("--config", type=str, required=True)
     parser.add_argument("--train_size", type=int, default=None, help="clips ds")
     parser.add_argument("--val_size", type=int, default=None, help="clips ds")
+    parser.add_argument("--token_size", type=int, default=1024)
     parser.add_argument("--name", type=str)
 
     args = parser.parse_args()
