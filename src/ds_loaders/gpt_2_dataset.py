@@ -15,8 +15,9 @@ class ModelDatasetTokGPU(Dataset):
                  mode: str,  # 'train', 'test', 'val'
                  length=None,
                  token_size=1024,
-                 device="gpu"):
-        self.tokenizer = get_model_tokenizer()
+                 device="gpu",
+                 model="gpt2"):
+        self.tokenizer = get_model_tokenizer(model)
         self.token_size = token_size
         self.device = device
 
@@ -67,8 +68,9 @@ class ModelDatasetTok(Dataset):
                 #  mode=Literal['train', 'test', 'val'],
                  mode: str,                     # 'train', 'test', 'val'
                  length=None,
-                 token_size=1024):
-        self.tokenizer = get_model_tokenizer()
+                 token_size=1024,
+                 model="gpt2"):
+        self.tokenizer = get_model_tokenizer(model)
         self.token_size = token_size
         print(f"Loading ds...")
         if path.endswith("json"):

@@ -22,33 +22,9 @@ from tqdm import trange, tqdm
 from src.ds_loaders.gpt_2_dataset import ModelDatasetTok, ModelDatasetTokGPU
 from src.utils.deep_tools import set_seed, get_model_tokenizer
 from src.utils.logger import LOGGER
+from src.model.deep_models import MODELS
 
-from transformers import GPT2LMHeadModel, OpenAIGPTLMHeadModel, BertLMHeadModel, RobertaForMaskedLM, XLNetLMHeadModel, AlbertForMaskedLM
-from transformers import GPT2Tokenizer, OpenAIGPTTokenizer, BertTokenizer, RobertaTokenizer, XLNetTokenizer, AlbertTokenizer
 
-MODELS = {
-    "gpt2": GPT2LMHeadModel,
-    "openai-gpt": OpenAIGPTLMHeadModel,
-    "bert-base-uncased": BertLMHeadModel,
-    "bert-base-cased": BertLMHeadModel,
-    "roberta-base": RobertaForMaskedLM,
-    "xlnet-base-cased": XLNetLMHeadModel,
-    "albert-base-v2": AlbertForMaskedLM,
-    "albert-large-v2": AlbertForMaskedLM,
-    "albert-xlarge-v2": AlbertForMaskedLM
-}
-
-TOKENIZERS = {
-    "gpt2": GPT2Tokenizer,
-    "openai-gpt": OpenAIGPTTokenizer,
-    "bert-base-uncased": BertTokenizer,
-    "bert-base-cased": BertTokenizer,
-    "roberta-base": RobertaTokenizer,
-    "xlnet-base-cased": XLNetTokenizer,
-    "albert-base-v2": AlbertTokenizer,
-    "albert-large-v2": AlbertTokenizer,
-    "albert-xlarge-v2": AlbertTokenizer
-}
 
 
 # from tensorboardX import SummaryWriter
@@ -314,7 +290,7 @@ def main(args):
     wb_config = init_wandb(args.name, cnf)
 
     LOGGER.debug(f"Create {args.model} tokenizer")
-    tokenizer = get_model_tokenizer(args.model, tok=TOKENIZERS[args.model])
+    tokenizer = get_model_tokenizer(args.model)
     ignore_idx = tokenizer.pad_token_id
 
     LOGGER.debug("Load train data")
