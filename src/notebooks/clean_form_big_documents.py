@@ -43,10 +43,15 @@ def model_tokenize_save_less_n(loader: DSLoader, path: str, n: int, tokenizer, c
         return res
 
     res = {
-        'train': _sub_tokenize(loader.X_train, loader.y_train, msg="train"),
-        'val': _sub_tokenize(loader.X_val, loader.y_val, msg="val"),
-        'test': _sub_tokenize(loader.X_test, loader.y_test, msg="test"),
+        'train': _sub_tokenize(loader.X_train, loader.y_train, msg="Train:"),
+        'val': _sub_tokenize(loader.X_val, loader.y_val, msg="Validation:"),
+        'test': _sub_tokenize(loader.X_test, loader.y_test, msg="Test:"),
     }
+
+    print(f"Number of train entries: {len(res['train'])}")
+    print(f"Number of val entries: {len(res['val'])}")
+    print(f"Number of test entries: {len(res['test'])}")
+
     with open(path, 'w') as f:
         json.dump(res, f, indent=4)
 

@@ -4,10 +4,10 @@
     "batch_size": 1,
     "num_workers": 4,
     "device": "cuda",
-    "num_train_epochs": 1,
-    "model_dir": "models_gpt2",
+    "num_train_epochs": 5,
+    "model_dir": "models/models_gpt2",
     "max_grad_norm": 1.0,
     "seed": 1,
     "n_gpu": 1,
-    "validate_each_step": 100
+    "validate_each_step": 1000
 }

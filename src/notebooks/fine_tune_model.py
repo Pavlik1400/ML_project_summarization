@@ -1,4 +1,4 @@
-"""
+"src/notebooks/fine_tune_model.py""
 Script to fine tune a model
 """
 
@@ -98,19 +98,19 @@ def train(model, tokenizer, train_dataset, valid_dataset, ignore_index, cnf):
                 scheduler.step()  # Update learning rate schedule
                 model.zero_grad()
                 global_step += 1
-                wandb.log({"lr": scheduler.get_lr(), "loss": (tr_loss - logging_loss)/cnf["gradient_accumulation_steps"]})
+                wandb.log({"lr": scheduler.get_lr()[0], "loss": (tr_loss - logging_loss)/cnf["gradient_accumulation_steps"]})
                 logging_loss = tr_loss
                 # wandb.log({"lr": scheduler.get_lr(), "loss": tr_loss})
                 # print("loss:", loss.item(), end='\n\n')
-                print(f"loss: {loss.item()}", end="\n\n")
+                # print(f"loss: {loss.item()}", end="\n\n")
 
                 # if (step + 1)/cnf["gradient_accumulation_steps"] == 1.0:
                 # 	print('After 1st update: ', end='\n\n')
                 # 	generate_sample(valid_dataset, tokenizer, num=2, eval_step=False)
 
-            if (step + 1) % cnf["validate_each_step"] == 0:
+            if (step) % cnf["validate_each_step"] == 0:
                 LOGGER.info("Evaluating")
-                results = evaluate(args, model, valid_dataset, ignore_index)
+                results = evaluate(model, valid_dataset, ignore_index, cnf)
                 if prev_val_loss > results['val_loss']:
                     torch.save(model.state_dict(), os.path.join(cnf["model_dir"], f"model_best_val.pt"))
                 wandb.log(results)
