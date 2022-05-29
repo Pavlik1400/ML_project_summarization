@@ -36,13 +36,13 @@ class GPT21024DatasetTokGPU(Dataset):
         print(f"Moving ds to GPU")
         self.ds = []
         self.sum_indecies = []
-        for idx in range(len(ds)):
+        for idx in range(self.len):
             text = self.tokenizer.encode(self.tokenizer.pad_token) * 1024
-            content = self.ds[idx]['document'] + self.tokenizer.encode(self.tokenizer.sep_token) + self.ds[idx]['summary']
+            content = ds[idx]['document'] + self.tokenizer.encode(self.tokenizer.sep_token) + ds[idx]['summary']
             text[:len(content)] = content
             text = torch.tensor(text)
             self.ds.append(text.to("cuda"))
-            self.sum_indecies.append(len(self.ds[idx]['document']))
+            self.sum_indecies.append(len(ds[idx]['document']))
 
     def __len__(self):
         return self.len

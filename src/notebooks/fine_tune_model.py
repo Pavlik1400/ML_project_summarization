@@ -1,4 +1,4 @@
-"src/notebooks/fine_tune_model.py""
+"""
 Script to fine tune a model
 """
 
@@ -19,7 +19,7 @@ from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from tqdm import trange, tqdm
 
-from src.ds_loaders.gpt_2_dataset import GPT21024DatasetTok
+from src.ds_loaders.gpt_2_dataset import GPT21024DatasetTok, GPT21024DatasetTokGPU
 from src.utils.deep_tools import set_seed, get_model_tokenizer
 from src.utils.logger import LOGGER
 
@@ -53,7 +53,8 @@ def train(model, tokenizer, train_dataset, valid_dataset, ignore_index, cnf):
 
     train_sampler = RandomSampler(train_dataset)
     train_dl = DataLoader(train_dataset, sampler=train_sampler, batch_size=cnf["batch_size"],
-                          num_workers=cnf["num_workers"])
+                        #   num_workers=cnf["num_workers"]
+                          )
     loss_fct = CrossEntropyLoss(ignore_index=ignore_index)  # ignores padding token for loss calculation
     optimizer = AdamW(model.parameters(), lr=cnf["lr"])
     scheduler = WarmupLinearSchedule(optimizer, 100, 80000)
@@ -167,10 +168,10 @@ def main(args):
     ignore_idx = tokenizer.pad_token_id
 
     LOGGER.debug("Load train data")
-    train_data = GPT21024DatasetTok(args.ds_path, mode="train", length=args.train_size)
+    train_data = GPT21024DatasetTokGPU(args.ds_path, mode="train", length=args.train_size)
 
     LOGGER.debug("Load validation data")
-    valid_data = GPT21024DatasetTok(args.ds_path, mode="val", length=args.val_size)
+    valid_data = GPT21024DatasetTokGPU(args.ds_path, mode="val", length=args.val_size)
 
     LOGGER.debug(f"Create {args.model} model")
     model = GPT2LMHeadModel.from_pretrained(args.model)
