@@ -17,19 +17,20 @@ class GPT21024DatasetTokGPU(Dataset):
         self.tokenizer = get_model_tokenizer()
 
         print(f"Loading ds...")
-        with open(path, 'r') as ds_f:
-            if path.endswith("json"):
+        if path.endswith("json"):
+            with open(path, 'r') as ds_f:
                 ds = json.load(ds_f)
-            else:
+        else:
+            with open(path, 'rb') as ds_f:
                 ds = pickle.load(ds_f)
-            if mode == 'train':
-                ds = ds['train'][:length]
-            elif mode == 'val':
-                ds = ds['val'][:length]
-            elif mode == 'test':
-                ds = ds['test'][:length]
-            else:
-                raise ValueError(f"Incorrect mode: {mode}")
+        if mode == 'train':
+            ds = ds['train'][:length]
+        elif mode == 'val':
+            ds = ds['val'][:length]
+        elif mode == 'test':
+            ds = ds['test'][:length]
+        else:
+            raise ValueError(f"Incorrect mode: {mode}")
 
         self.mode = mode
         if length is None:

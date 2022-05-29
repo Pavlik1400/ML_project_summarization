@@ -53,10 +53,11 @@ def model_tokenize_save_less_n(loader: DSLoader, path: str, n: int, tokenizer, c
     print(f"Number of val entries: {len(res['val'])}")
     print(f"Number of test entries: {len(res['test'])}")
 
-    with open(path, 'w') as f:
-        if path.endswith("json"):
+    if path.endswith("json"):
+        with open(path, 'w') as f:
             json.dump(res, f, indent=4)
-        else:
+    else:
+        with open(path, 'wb') as f:
             pickle.dump(res, f)
 
 
