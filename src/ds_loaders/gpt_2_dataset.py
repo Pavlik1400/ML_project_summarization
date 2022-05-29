@@ -7,6 +7,51 @@ from torch.utils.data import Dataset
 from ..utils.deep_tools import get_model_tokenizer
 
 
+class GPT21024DatasetTokGPU(Dataset):
+    def __init__(self,
+                 path: str,
+                 #  mode=Literal['train', 'test', 'val'],
+                 mode: str,  # 'train', 'test', 'val'
+                 length=None):
+        self.tokenizer = get_model_tokenizer()
+
+        print(f"Loading ds...")
+        with open(path, 'r') as ds_f:
+            ds = json.load(ds_f)
+            if mode == 'train':
+                ds = ds['train'][:length]
+            elif mode == 'val':
+                ds = ds['val'][:length]
+            elif mode == 'test':
+                ds = ds['test'][:length]
+            else:
+                raise ValueError(f"Incorrect mode: {mode}")
+
+        self.mode = mode
+        if length is None:
+            self.len = len(ds)
+        else:
+            self.len = length
+
+        print(f"Moving ds to GPU")
+        self.ds = []
+        self.sum_indecies = []
+        for idx in range(len(ds)):
+            text = self.tokenizer.encode(self.tokenizer.pad_token) * 1024
+            content = self.ds[idx]['document'] + self.tokenizer.encode(self.tokenizer.sep_token) + self.ds[idx]['summary']
+            text[:len(content)] = content
+            text = torch.tensor(text)
+            self.ds.append(text.to("cuda"))
+            self.sum_indecies.append(len(self.ds[idx]['document']))
+
+    def __len__(self):
+        return self.len
+
+    def __getitem__(self, idx):
+        sample = {'document': self.ds[idx], 'sum_idx': self.sum_indecies[idx]}
+        return sample
+
+
 class GPT21024DatasetTok(Dataset):
     def __init__(self,
                  path: str,
