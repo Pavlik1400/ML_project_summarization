@@ -23,17 +23,31 @@ from src.ds_loaders.gpt_2_dataset import ModelDatasetTok, MoodelDatasetTokGPU
 from src.utils.deep_tools import set_seed, get_model_tokenizer
 from src.utils.logger import LOGGER
 
-from transformers import GPT2LMHeadModel, OpenAIGPTLMHeadModel
-from transformers import GPT2Tokenizer, OpenAIGPTTokenizer
+from transformers import GPT2LMHeadModel, OpenAIGPTLMHeadModel, BertLMHeadModel, RobertaForMaskedLM, XLNetLMHeadModel, AlbertForMaskedLM
+from transformers import GPT2Tokenizer, OpenAIGPTTokenizer, BertTokenizer, RobertaTokenizer, XLNetTokenizer, AlbertTokenizer
 
 MODELS = {
     "gpt2": GPT2LMHeadModel,
-    "openai-gpt": OpenAIGPTLMHeadModel
+    "openai-gpt": OpenAIGPTLMHeadModel,
+    "bert-base-uncased": BertLMHeadModel,
+    "bert-base-cased": BertLMHeadModel,
+    "roberta-base": RobertaForMaskedLM,
+    "xlnet-base-cased": XLNetLMHeadModel,
+    "albert-base-v2": AlbertForMaskedLM,
+    "albert-large-v2": AlbertForMaskedLM,
+    "albert-xlarge-v2": AlbertForMaskedLM
 }
 
 TOKENIZERS = {
     "gpt2": GPT2Tokenizer,
-    "openai-gpt": OpenAIGPTTokenizer
+    "openai-gpt": OpenAIGPTTokenizer,
+    "bert-base-uncased": BertTokenizer,
+    "bert-base-cased": BertTokenizer,
+    "roberta-base": RobertaTokenizer,
+    "xlnet-base-cased": XLNetTokenizer,
+    "albert-base-v2": AlbertTokenizer,
+    "albert-large-v2": AlbertTokenizer,
+    "albert-xlarge-v2": AlbertTokenizer
 }
 
 
@@ -66,7 +80,7 @@ def train(model, tokenizer, train_dataset, valid_dataset, ignore_index, cnf):
 
     train_sampler = RandomSampler(train_dataset)
     train_dl = DataLoader(train_dataset, sampler=train_sampler, batch_size=cnf["batch_size"],
-                        #   num_workers=cnf["num_workers"]
+                          # num_workers=cnf["num_workers"]
                           )
     loss_fct = CrossEntropyLoss(ignore_index=ignore_index)  # ignores padding token for loss calculation
     optimizer = AdamW(model.parameters(), lr=cnf["lr"])
@@ -304,13 +318,16 @@ def main(args):
     ignore_idx = tokenizer.pad_token_id
 
     LOGGER.debug("Load train data")
-    train_data = MoodelDatasetTokGPU(args.ds_path, mode="train", length=args.train_size, token_size=args.token_size)
+    # train_data = MoodelDatasetTokGPU(args.ds_path, mode="train", length=args.train_size, token_size=args.token_size)
+    train_data = ModelDatasetTok(args.ds_path, mode="train", length=args.train_size, token_size=args.token_size)
 
     LOGGER.debug("Load validation data")
-    valid_data = MoodelDatasetTokGPU(args.ds_path, mode="val", length=args.val_size, token_size=args.token_size)
+    # valid_data = MoodelDatasetTokGPU(args.ds_path, mode="val", length=args.val_size, token_size=args.token_size)
+    valid_data = ModelDatasetTok(args.ds_path, mode="val", length=args.val_size, token_size=args.token_size)
 
     LOGGER.debug(f"Create {args.model} model")
-    model = GPT2LMHeadModel.from_pretrained(args.model)
+    # model = GPT2LMHeadModel.from_pretrained(args.model)
+    model = MODELS[args.model].from_pretrained(args.model)
     model.resize_token_embeddings(len(tokenizer))
     LOGGER.debug(f"len of tokenizer: {len(tokenizer)}")
 
