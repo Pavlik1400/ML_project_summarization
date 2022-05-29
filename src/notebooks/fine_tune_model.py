@@ -130,6 +130,90 @@ def train(model, tokenizer, train_dataset, valid_dataset, ignore_index, cnf):
                 wandb.log(results)
         # model.save(os.path.join(cnf["weights_dir"], f"model_{step}.pt"))
         torch.save(model.state_dict(), os.path.join(cnf["model_dir"], f"model_{ep}.pt"))
+
+
+def train_with_batches(model, tokenizer, train_dataset, valid_dataset, ignore_index, cnf):
+    # """ Trains GPT2 model and logs necessary details.
+    # 	Args:
+    # 		args: dict that contains all the necessary information passed by user while training
+    # 		model: finetuned gpt/gpt2 model
+    # 		tokenizer: GPT/GPT2 tokenizer
+    # 		train_dataset: GPT21024Dataset object for training data
+    # 		ignore_index: token not considered in loss calculation
+    # """
+
+    # - Initialize all the stuff
+    if not os.path.exists(cnf["model_dir"]):
+        os.makedirs(cnf["model_dir"])
+    batch_size = cnf["batch_size"]
+
+    train_sampler = RandomSampler(train_dataset)
+    train_dl = DataLoader(train_dataset, sampler=train_sampler, batch_size=cnf["batch_size"],
+                        #   num_workers=cnf["num_workers"]
+                          )
+    loss_fct = CrossEntropyLoss(ignore_index=ignore_index)  # ignores padding token for loss calculation
+    optimizer = AdamW(model.parameters(), lr=cnf["lr"])
+    scheduler = WarmupLinearSchedule(optimizer, 100, 80000)
+
+    global_step = 0
+    tr_loss, logging_loss = 0.0, 0.0
+    prev_val_loss = 100000
+
+    model.zero_grad()
+    train_iterator = trange(int(cnf["num_train_epochs"]), desc="Epoch")
+    if cnf["seed"] is not None:
+        set_seed(cnf)
+
+    for ep in train_iterator:
+        epoch_iterator = tqdm(train_dl, desc="Training")
+        for step, batch in enumerate(epoch_iterator):
+            # get value from dataset
+            inputs, labels = torch.tensor(batch['document']), torch.tensor(batch['document'])
+            inputs = inputs.to(cnf["device"])
+            labels = labels.to(cnf["device"])
+
+            # forward
+            model.train()
+            for b in range(batch_size):
+                logits = model(inputs)[b]
+                idx = batch['sum_idx'][b].item()  # index of separator token
+
+                # only consider loss on reference summary just like seq2seq models
+                shift_logits = logits[..., idx:-1, :].contiguous()
+                shift_labels = labels[..., idx + 1:].contiguous()
+
+                # calculate loss function
+                loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
+                loss = loss / (cnf["gradient_accumulation_steps"] * batch_size)
+
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(model.parameters(), cnf["max_grad_norm"])
+                tr_loss += loss.item()
+
+            # if we iterated over gradient_accumulation_steps docs, update weights
+            if (step + 1) % cnf["gradient_accumulation_steps"] == 0:
+                optimizer.step()
+                scheduler.step()  # Update learning rate schedule
+                model.zero_grad()
+                global_step += 1
+                wandb.log({"lr": scheduler.get_lr()[0], "loss": (tr_loss - logging_loss)/cnf["gradient_accumulation_steps"]})
+                logging_loss = tr_loss
+                # wandb.log({"lr": scheduler.get_lr(), "loss": tr_loss})
+                # print("loss:", loss.item(), end='\n\n')
+                # print(f"loss: {loss.item()}", end="\n\n")
+
+                # if (step + 1)/cnf["gradient_accumulation_steps"] == 1.0:
+                # 	print('After 1st update: ', end='\n\n')
+                # 	generate_sample(valid_dataset, tokenizer, num=2, eval_step=False)
+
+            if (step) % cnf["validate_each_step"] == 0:
+                LOGGER.info("Evaluating")
+                results = evaluate(model, valid_dataset, ignore_index, cnf)
+                if prev_val_loss > results['val_loss']:
+                    torch.save(model.state_dict(), os.path.join(cnf["model_dir"], f"model_best_val.pt"))
+                wandb.log(results)
+        # model.save(os.path.join(cnf["weights_dir"], f"model_{step}.pt"))
+        torch.save(model.state_dict(), os.path.join(cnf["model_dir"], f"model_{ep}.pt"))
     
 
 def evaluate(model, eval_dataset, ignore_index, cnf):
@@ -195,7 +279,8 @@ def main(args):
 
     LOGGER.info("Start training")
     start = time.time()
-    train(model, tokenizer, train_data, valid_data, ignore_idx, cnf)
+    # train(model, tokenizer, train_data, valid_data, ignore_idx, cnf)
+    train_with_batches(model, tokenizer, train_data, valid_data, ignore_idx, cnf)
     LOGGER.info('total time: ', (time.time() - start) / 60, " minutes", end='\n\n')
 
     torch.save(model.state_dict(), os.path.join(cnf["model_dir"], f"model_final.pt"))
