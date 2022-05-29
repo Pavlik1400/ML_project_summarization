@@ -7,6 +7,7 @@ import sys
 sys.path.append(os.path.join(os.getcwd(), "..", ".."))
 import json
 import time
+from datetime import datetime
 from argparse import ArgumentParser
 from pprint import pformat
 from typing import Dict
@@ -15,7 +16,7 @@ import torch
 import wandb
 from pytorch_transformers import GPT2LMHeadModel, AdamW, WarmupLinearSchedule
 from torch.nn import CrossEntropyLoss
-from torch.utils.data import DataLoader, RandomSampler
+from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from tqdm import trange, tqdm
 
 from src.ds_loaders.gpt_2_dataset import GPT21024DatasetTok
@@ -59,13 +60,14 @@ def train(model, tokenizer, train_dataset, valid_dataset, ignore_index, cnf):
 
     global_step = 0
     tr_loss, logging_loss = 0.0, 0.0
+    prev_val_loss = 100000
 
     model.zero_grad()
     train_iterator = trange(int(cnf["num_train_epochs"]), desc="Epoch")
     if cnf["seed"] is not None:
         set_seed(cnf)
 
-    for _ in train_iterator:
+    for ep in train_iterator:
         epoch_iterator = tqdm(train_dl, desc="Training")
         for step, batch in enumerate(epoch_iterator):
             # get value from dataset
@@ -99,21 +101,56 @@ def train(model, tokenizer, train_dataset, valid_dataset, ignore_index, cnf):
                 wandb.log({"lr": scheduler.get_lr(), "loss": (tr_loss - logging_loss)/cnf["gradient_accumulation_steps"]})
                 logging_loss = tr_loss
                 # wandb.log({"lr": scheduler.get_lr(), "loss": tr_loss})
-                print("loss:", loss.item(), end='\n\n')
+                # print("loss:", loss.item(), end='\n\n')
+                print(f"loss: {loss.item()}", end="\n\n")
 
                 # if (step + 1)/cnf["gradient_accumulation_steps"] == 1.0:
                 # 	print('After 1st update: ', end='\n\n')
                 # 	generate_sample(valid_dataset, tokenizer, num=2, eval_step=False)
 
-            # if (step + 1) % (10*cnf["gradient_accumulation_steps"]) == 0:
-            # results = evaluate(args, model, valid_dataset, ignore_index, global_step)
-            # for key, value in results.items():
-            #     writer.add_scalar('eval_{}'.format(key), value, global_step)
-            # print('After', global_step+1,'updates: ', end='\n\n')
-            # generate_sample(valid_dataset, tokenizer, num=2, eval_step=True)
+            if (step + 1) % cnf["validate_each_step"] == 0:
+                LOGGER.info("Evaluating")
+                results = evaluate(args, model, valid_dataset, ignore_index)
+                if prev_val_loss > results['val_loss']:
+                    torch.save(model.state_dict(), os.path.join(cnf["model_dir"], f"model_best_val.pt"))
+                wandb.log(results)
         # model.save(os.path.join(cnf["weights_dir"], f"model_{step}.pt"))
-        torch.save(model.state_dict(), os.path.join(cnf["model_dir"], f"model_{step}.pt"))
+        torch.save(model.state_dict(), os.path.join(cnf["model_dir"], f"model_{ep}.pt"))
     
+
+def evaluate(model, eval_dataset, ignore_index, cnf):
+    # """ Returns perplexity score on validation dataset.
+    #     Args:
+    #         args: dict that contains all the necessary information passed by user while training
+    #         model: finetuned gpt/gpt2 model
+    #         eval_dataset: GPT21024Dataset object for validation data
+    #         global_step: no. of times gradients have backpropagated
+    #         ignore_index: token not considered in loss calculation
+    # """
+    eval_sampler = SequentialSampler(eval_dataset)
+    eval_dataloader = DataLoader(eval_dataset, sampler=eval_sampler, batch_size=cnf["batch_size"])
+    loss_fct = CrossEntropyLoss(ignore_index=ignore_index) #ignores padding token for loss calculation
+
+    val_loss = 0.0
+    nb_eval_steps = 0
+    model.eval()
+
+    for batch in tqdm(eval_dataloader, desc="Evaluating"):
+        inputs, labels = batch['document'].to(cnf["device"]), batch['document'].to(cnf["device"])
+
+        with torch.no_grad():
+            logits = model(inputs)[0]
+            # idx = batch['sum_idx'].item() # index of separator token
+            # only consider loss on reference summary just like seq2seq models
+            shift_logits = logits[..., batch['sum_idx']:-1, :].contiguous()
+            shift_labels = labels[..., batch['sum_idx']+1:].contiguous()
+            lm_loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
+            val_loss += lm_loss.mean().item()
+        nb_eval_steps += 1
+
+    val_loss = val_loss / nb_eval_steps
+
+    return {"val_loss": val_loss}
 
 
 def main(args):

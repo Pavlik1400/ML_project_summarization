@@ -8,5 +8,6 @@
     "model_dir": "models_gpt2",
     "max_grad_norm": 1.0,
     "seed": 1,
-    "n_gpu": 1
+    "n_gpu": 1,
+    "validate_each_step": 100
 }
