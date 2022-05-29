@@ -8,15 +8,17 @@ from ..utils.deep_tools import get_model_tokenizer
 import pickle
 
 
-class MoodelDatasetTokGPU(Dataset):
+class ModelDatasetTokGPU(Dataset):
     def __init__(self,
                  path: str,
                  #  mode=Literal['train', 'test', 'val'],
                  mode: str,  # 'train', 'test', 'val'
                  length=None,
-                 token_size=1024):
+                 token_size=1024,
+                 device="gpu"):
         self.tokenizer = get_model_tokenizer()
         self.token_size = token_size
+        self.device = device
 
         print(f"Loading ds...")
         if path.endswith("json"):
@@ -40,7 +42,7 @@ class MoodelDatasetTokGPU(Dataset):
         else:
             self.len = length
 
-        print(f"Moving ds to GPU")
+        print(f"Moving ds to {self.device}")
         self.ds = []
         self.sum_indecies = []
         for idx in range(self.len):
@@ -48,7 +50,7 @@ class MoodelDatasetTokGPU(Dataset):
             content = ds[idx]['document'] + self.tokenizer.encode(self.tokenizer.sep_token) + ds[idx]['summary']
             text[:len(content)] = content
             text = torch.tensor(text)
-            self.ds.append(text.to("cuda"))
+            self.ds.append(text.to(self.device))
             self.sum_indecies.append(len(ds[idx]['document']))
 
     def __len__(self):
@@ -68,16 +70,21 @@ class ModelDatasetTok(Dataset):
                  token_size=1024):
         self.tokenizer = get_model_tokenizer()
         self.token_size = token_size
-        with open(path, 'r') as ds_f:
-            ds = json.load(ds_f)
-            if mode == 'train':
-                self.ds = ds['train'][:length]
-            elif mode == 'val':
-                self.ds = ds['val'][:length]
-            elif mode == 'test':
-                self.ds = ds['test'][:length]
-            else:
-                raise ValueError(f"Incorrect mode: {mode}")
+        print(f"Loading ds...")
+        if path.endswith("json"):
+            with open(path, 'r') as ds_f:
+                ds = json.load(ds_f)
+        else:
+            with open(path, 'rb') as ds_f:
+                ds = pickle.load(ds_f)
+        if mode == 'train':
+            self.ds = ds['train'][:length]
+        elif mode == 'val':
+            self.ds = ds['val'][:length]
+        elif mode == 'test':
+            self.ds = ds['test'][:length]
+        else:
+            raise ValueError(f"Incorrect mode: {mode}")
 
         self.mode = mode
         if length is None:

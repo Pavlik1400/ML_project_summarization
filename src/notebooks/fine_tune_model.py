@@ -19,7 +19,7 @@ from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from tqdm import trange, tqdm
 
-from src.ds_loaders.gpt_2_dataset import ModelDatasetTok, MoodelDatasetTokGPU
+from src.ds_loaders.gpt_2_dataset import ModelDatasetTok, ModelDatasetTokGPU
 from src.utils.deep_tools import set_seed, get_model_tokenizer
 from src.utils.logger import LOGGER
 
@@ -318,12 +318,22 @@ def main(args):
     ignore_idx = tokenizer.pad_token_id
 
     LOGGER.debug("Load train data")
-    # train_data = MoodelDatasetTokGPU(args.ds_path, mode="train", length=args.train_size, token_size=args.token_size)
-    train_data = ModelDatasetTok(args.ds_path, mode="train", length=args.train_size, token_size=args.token_size)
+    train_data = ModelDatasetTokGPU(
+        args.ds_path,
+        mode="train",
+        length=args.train_size,
+        token_size=args.token_size,
+        device=cnf["device"])
+    # train_data = ModelDatasetTok(args.ds_path, mode="train", length=args.train_size, token_size=args.token_size)
 
     LOGGER.debug("Load validation data")
-    # valid_data = MoodelDatasetTokGPU(args.ds_path, mode="val", length=args.val_size, token_size=args.token_size)
-    valid_data = ModelDatasetTok(args.ds_path, mode="val", length=args.val_size, token_size=args.token_size)
+    valid_data = ModelDatasetTokGPU(
+        args.ds_path,
+        mode="val",
+        length=args.val_size,
+        token_size=args.token_size,
+        device=cnf["device"])
+    # valid_data = ModelDatasetTok(args.ds_path, mode="val", length=args.val_size, token_size=args.token_size)
 
     LOGGER.debug(f"Create {args.model} model")
     # model = GPT2LMHeadModel.from_pretrained(args.model)
@@ -335,8 +345,8 @@ def main(args):
 
     LOGGER.info("Start training")
     start = time.time()
-    # train(model, tokenizer, train_data, valid_data, ignore_idx, cnf)
-    train_with_batches(model, tokenizer, train_data, valid_data, ignore_idx, cnf)
+    train(model, tokenizer, train_data, valid_data, ignore_idx, cnf)
+    # train_with_batches(model, tokenizer, train_data, valid_data, ignore_idx, cnf)
     LOGGER.info('total time: ', (time.time() - start) / 60, " minutes", end='\n\n')
 
     torch.save(model.state_dict(), os.path.join(cnf["model_dir"], f"model_final.pt"))
