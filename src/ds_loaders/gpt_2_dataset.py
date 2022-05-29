@@ -5,6 +5,7 @@ import torch
 from torch.utils.data import Dataset
 
 from ..utils.deep_tools import get_model_tokenizer
+import pickle
 
 
 class GPT21024DatasetTokGPU(Dataset):
@@ -17,7 +18,10 @@ class GPT21024DatasetTokGPU(Dataset):
 
         print(f"Loading ds...")
         with open(path, 'r') as ds_f:
-            ds = json.load(ds_f)
+            if path.endswith("json"):
+                ds = json.load(ds_f)
+            else:
+                ds = pickle.load(ds_f)
             if mode == 'train':
                 ds = ds['train'][:length]
             elif mode == 'val':
