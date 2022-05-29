@@ -174,8 +174,9 @@ def train_with_batches(model, tokenizer, train_dataset, valid_dataset, ignore_in
 
             # forward
             model.train()
+            output = model(inputs)
             for b in range(batch_size):
-                logits = model(inputs)[b]
+                logits = output[b]
                 idx = batch['sum_idx'][b].item()  # index of separator token
 
                 # only consider loss on reference summary just like seq2seq models
@@ -245,6 +246,44 @@ def evaluate(model, eval_dataset, ignore_index, cnf):
             lm_loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
             val_loss += lm_loss.mean().item()
         nb_eval_steps += 1
+
+    val_loss = val_loss / nb_eval_steps
+
+    return {"val_loss": val_loss}
+
+
+def evaluate_with_batch(model, eval_dataset, ignore_index, cnf):
+    # """ Returns perplexity score on validation dataset.
+    #     Args:
+    #         args: dict that contains all the necessary information passed by user while training
+    #         model: finetuned gpt/gpt2 model
+    #         eval_dataset: GPT21024Dataset object for validation data
+    #         global_step: no. of times gradients have backpropagated
+    #         ignore_index: token not considered in loss calculation
+    # """
+    batch_size = cnf["batch_size"]
+    eval_sampler = SequentialSampler(eval_dataset)
+    eval_dataloader = DataLoader(eval_dataset, sampler=eval_sampler, batch_size=cnf["batch_size"])
+    loss_fct = CrossEntropyLoss(ignore_index=ignore_index) #ignores padding token for loss calculation
+
+    val_loss = 0.0
+    nb_eval_steps = 0
+    model.eval()
+
+    for batch in tqdm(eval_dataloader, desc="Evaluating"):
+        inputs, labels = batch['document'].to(cnf["device"]), batch['document'].to(cnf["device"])
+
+        with torch.no_grad():
+            output = model(inputs)
+            for b in range(batch_size):
+                logits = output[b]
+                # idx = batch['sum_idx'].item() # index of separator token
+                # only consider loss on reference summary just like seq2seq models
+                shift_logits = logits[..., batch['sum_idx']:-1, :].contiguous()
+                shift_labels = labels[..., batch['sum_idx']+1:].contiguous()
+                lm_loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
+                val_loss += lm_loss.mean().item()
+        nb_eval_steps += b
 
     val_loss = val_loss / nb_eval_steps
 
