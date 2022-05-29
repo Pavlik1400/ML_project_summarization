@@ -209,7 +209,7 @@ def train_with_batches(model, tokenizer, train_dataset, valid_dataset, ignore_in
 
             if (step) % cnf["validate_each_step"] == 0:
                 LOGGER.info("Evaluating")
-                results = evaluate(model, valid_dataset, ignore_index, cnf)
+                results = evaluate_with_batch(model, valid_dataset, ignore_index, cnf)
                 if prev_val_loss > results['val_loss']:
                     torch.save(model.state_dict(), os.path.join(cnf["model_dir"], f"model_best_val.pt"))
                 wandb.log(results)

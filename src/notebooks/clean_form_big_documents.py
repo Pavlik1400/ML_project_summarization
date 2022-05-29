@@ -94,7 +94,7 @@ def main(args):
         n=args.n,
         tokenizer=tokenizer,
         clip_idx=args.size,
-        to_lower=args.lower()
+        to_lower=args.to_lower
     )
 
 
