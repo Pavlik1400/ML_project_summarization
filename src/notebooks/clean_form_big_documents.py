@@ -42,7 +42,8 @@ def model_tokenize_save_less_n(
 
             doc_tok = tokenizer.encode(doc)
             summ_tok = tokenizer.encode(summ)
-            if len(doc_tok) + len(summ_tok) + 1 > n:
+            sep_tok = tokenizer.encode(tokenizer.sep_token)
+            if len(doc_tok) + len(summ_tok) + len(sep_tok) > n:
                 continue
             res.append(
                 {
