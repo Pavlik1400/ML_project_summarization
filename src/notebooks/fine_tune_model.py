@@ -1,4 +1,4 @@
-"""
+""
 Script to fine tune a model
 """
 
@@ -82,6 +82,12 @@ def train(model, tokenizer, train_dataset, valid_dataset, ignore_index, cnf):
             # forward
             model.train()
             logits = model(inputs)[0]
+            # print("=" * 50)
+            # print(inputs)
+            # print(inputs.shape)
+            # logits = model(inputs[0])
+            # logits = logits[0]
+            
             idx = batch['sum_idx'].item()  # index of separator token
 
             # only consider loss on reference summary just like seq2seq models
@@ -102,7 +108,7 @@ def train(model, tokenizer, train_dataset, valid_dataset, ignore_index, cnf):
                 scheduler.step()  # Update learning rate schedule
                 model.zero_grad()
                 global_step += 1
-                wandb.log({"lr": scheduler.get_lr()[0], "loss": (tr_loss - logging_loss)/cnf["gradient_accumulation_steps"]})
+                wandb.log({"lr": float(scheduler.get_lr()[0]), "loss": (tr_loss - logging_loss)/cnf["gradient_accumulation_steps"]})
                 logging_loss = tr_loss
                 # wandb.log({"lr": scheduler.get_lr(), "loss": tr_loss})
                 # print("loss:", loss.item(), end='\n\n')
@@ -295,20 +301,26 @@ def main(args):
 
     LOGGER.debug("Load train data")
     train_data = ModelDatasetTokGPU(
+    # train_data = ModelDatasetTok(
         args.ds_path,
         mode="train",
         length=args.train_size,
         token_size=args.token_size,
-        device=cnf["device"])
+        model=args.model,
+        device=cnf["device"]
+        )
     # train_data = ModelDatasetTok(args.ds_path, mode="train", length=args.train_size, token_size=args.token_size)
 
     LOGGER.debug("Load validation data")
     valid_data = ModelDatasetTokGPU(
+    # valid_data = ModelDatasetTok(
         args.ds_path,
         mode="val",
         length=args.val_size,
         token_size=args.token_size,
-        device=cnf["device"])
+        model=args.model,
+        device=cnf["device"]
+        )
     # valid_data = ModelDatasetTok(args.ds_path, mode="val", length=args.val_size, token_size=args.token_size)
 
     LOGGER.debug(f"Create {args.model} model")
