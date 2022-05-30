@@ -13,6 +13,7 @@ from src.model.deep_models import MODELS
 from src.utils.deep_tools import generate_summaries, get_model_tokenizer
 from src.preprocessing.corpus_preprocessor import CorpusPreprocessor
 from argparse import ArgumentParser
+from pytorch_transformers import GPT2LMHeadModel as GPT2LMHeadModelPT
 
 
 def evaluate_metrics(sum_pred, sum_true):
@@ -63,7 +64,9 @@ def evaluate_metrics(sum_pred, sum_true):
 def main(args):
     tokenizer = get_model_tokenizer(args.model)
 
+    # GPT2LMHeadModelPT
     model = MODELS[args.model].from_pretrained(args.model)
+    # model = GPT2LMHeadModelPT.from_pretrained(args.model)
     model.resize_token_embeddings(len(tokenizer))
     model.to(args.device)
     optimizer = AdamW(model.parameters(), lr=5e-5)
@@ -71,7 +74,7 @@ def main(args):
     model.train()
     model.zero_grad()
     model.eval()
-    model.load_state_dict(torch.load(args.model_path), strict=False)
+    model.load_state_dict(torch.load(args.model_path))
 
     if args.ds_path.endswith("json"):
         with open(args.ds_path, 'r') as f:

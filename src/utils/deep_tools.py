@@ -97,9 +97,7 @@ def generate_summaries(ds, tokenizer, model, length, temperature=0.8, top_k=10, 
     result = []
     for i in range(len(ds)):
         context, summary = ds[i]['document'], ds[i]['summary']
-        if length is None:
-            length = len(summary)
-        generated_text = sample_seq(model, context, length, device, temperature, top_k, top_p)
+        generated_text = sample_seq(model, context, len(summary) if length is None else length, device, temperature, top_k, top_p)
         generated_text = generated_text[0, len(context):].tolist()
         text = tokenizer.convert_ids_to_tokens(generated_text, skip_special_tokens=True)
         text = tokenizer.convert_tokens_to_string(text)
