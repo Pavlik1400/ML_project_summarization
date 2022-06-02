@@ -1,0 +1,18 @@
+{
+    "decoder_cnf": {
+        "comment": "not sure maybe 10-0.5",
+        "top_p": 0.8,
+        "top_k": 20,
+        "temperature": 0.8
+    },
+    "BLEU-1": 0.26539233416853597,
+    "BLEU-2": 0.13582302423391,
+    "BLEU-3": 0.07926573297215299,
+    "BLEU-4": 0.05070795273338491,
+    "ROUGE-1-fmeasure": 0.2654797960497395,
+    "ROUGE-2-fmeasure": 0.06888207799538895,
+    "ROUGE-L-fmeasure": 0.1924614302433627,
+    "ROUGE-1-recall": 0.2655966535816715,
+    "ROUGE-2-recall": 0.06930081819309865,
+    "ROUGE-L-recall": 0.1925369109262879
+}

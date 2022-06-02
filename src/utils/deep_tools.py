@@ -85,7 +85,7 @@ def sample_seq(model, context, length, device, temperature=1.0, top_k=0.0, top_p
         for _ in trange(length):
             inputs = {'input_ids': generated}
             outputs = model(
-                **inputs)  # Note: we could also use 'past' with GPT-2/Transfo-XL/XLNet (cached hidden-states)
+                **inputs)
             next_token_logits = outputs[0][0, -1, :] / temperature
             filtered_logits = top_k_top_p_filtering(next_token_logits, top_k=top_k, top_p=top_p)
             next_token = torch.multinomial(F.softmax(filtered_logits, dim=-1), num_samples=1)
@@ -114,34 +114,3 @@ def generate_summaries(ds, tokenizer, model, length, temperature=0.8, top_k=10, 
             print(tokenizer.decode(summary))
             print("=" * 50)
     return result
-
-
-def __generate_sample(data, tokenizer, model, num=1, eval_step=False, length=100, temperature=1, top_k=10, top_p=0.5,
-                    device=torch.device('cuda')):
-    """ Generate summaries for "num" number of articles.
-        Args:
-            data = GPT21024Dataset object
-            tokenizer = gpt/gpt2 tokenizer
-            model = gpt/gpt2 model
-            num = number of articles for which summaries has to be generated
-            eval_step = can be True/False, checks generating during evaluation or not
-    """
-    for i in range(num):
-        sample = data[i]
-        idx = sample['sum_idx']
-        context = sample['article'][:idx].tolist()
-        summary = sample['article'][idx + 1:][:100].tolist()
-        generated_text = sample_seq(model, context, length, device, temperature, top_k, top_p)
-        generated_text = generated_text[0, len(context):].tolist()
-        text = tokenizer.convert_ids_to_tokens(generated_text, skip_special_tokens=True)
-        text = tokenizer.convert_tokens_to_string(text)
-        if eval_step == False:
-            print('new_article', end='\n\n')
-            print(tokenizer.decode(context), end='\n\n')
-            print("generated_summary", end='\n\n')
-            print(text, end='\n\n')
-            print('actual_summary', end='\n\n')
-            print(tokenizer.decode(summary), end='\n\n')
-        else:
-            print(tokenizer.decode(context), end='\n\n')
-            print("generated_summary", end='\n\n')

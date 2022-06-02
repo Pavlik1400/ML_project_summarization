@@ -1,0 +1,58 @@
+{
+    "CourpusPreprocessor(strong)": {
+        "MyTextRank": {
+            "BLEU-1": 0.1193066568320118,
+            "BLEU-2": 0.056811381604450026,
+            "BLEU-3": 0.031586896022814476,
+            "BLEU-4": 0.02018784981411659,
+            "ROUGE-1-fmeasure": 0.16931500653151477,
+            "ROUGE-2-fmeasure": 0.04073598964138671,
+            "ROUGE-L-fmeasure": 0.12257655142214578,
+            "ROUGE-1-recall": 0.30826965657568667,
+            "ROUGE-2-recall": 0.08145199102212934,
+            "ROUGE-L-recall": 0.22512458784679756
+        }
+    },
+    "CourpusPreprocessor(mid)": {
+        "MyTextRank": {
+            "BLEU-1": 0.1274447949526814,
+            "BLEU-2": 0.0594547412529465,
+            "BLEU-3": 0.032570285544187595,
+            "BLEU-4": 0.021312870168388114,
+            "ROUGE-1-fmeasure": 0.19295180203505446,
+            "ROUGE-2-fmeasure": 0.04299791156368686,
+            "ROUGE-L-fmeasure": 0.1262348256523143,
+            "ROUGE-1-recall": 0.3817367557657666,
+            "ROUGE-2-recall": 0.09034510063617963,
+            "ROUGE-L-recall": 0.25281547529358545
+        }
+    },
+    "CourpusPreprocessor(simple)": {
+        "MyTextRank": {
+            "BLEU-1": 0.12337465981251888,
+            "BLEU-2": 0.05737012210535957,
+            "BLEU-3": 0.03146416017116722,
+            "BLEU-4": 0.020256195990688276,
+            "ROUGE-1-fmeasure": 0.18679319768794703,
+            "ROUGE-2-fmeasure": 0.0414640817689667,
+            "ROUGE-L-fmeasure": 0.1229256040980377,
+            "ROUGE-1-recall": 0.38371114059740763,
+            "ROUGE-2-recall": 0.09177518518118435,
+            "ROUGE-L-recall": 0.25552773383882615
+        }
+    },
+    "CourpusPreprocessor(nothing)": {
+        "MyTextRank": {
+            "BLEU-1": 0.11074746621621619,
+            "BLEU-2": 0.048614492598993794,
+            "BLEU-3": 0.026498847383642554,
+            "BLEU-4": 0.01687793166720613,
+            "ROUGE-1-fmeasure": 0.1982011916822154,
+            "ROUGE-2-fmeasure": 0.044926123470875455,
+            "ROUGE-L-fmeasure": 0.1304638930597425,
+            "ROUGE-1-recall": 0.3856539529048762,
+            "ROUGE-2-recall": 0.09330664131250437,
+            "ROUGE-L-recall": 0.2568115323219009
+        }
+    }
+}

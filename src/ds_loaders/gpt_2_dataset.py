@@ -47,7 +47,7 @@ class ModelDatasetTokGPU(Dataset):
         self.ds = []
         self.sum_indecies = []
         for idx in range(self.len):
-            text = self.tokenizer.encode(self.tokenizer.pad_token) * self.token_size
+            text = (self.tokenizer.encode(self.tokenizer.pad_token) * self.token_size)[:self.token_size]
             content = ds[idx]['document'] + self.tokenizer.encode(self.tokenizer.sep_token) + ds[idx]['summary']
             text[:len(content)] = content
             text = torch.tensor(text)
@@ -98,7 +98,7 @@ class ModelDatasetTok(Dataset):
         return self.len
 
     def __getitem__(self, idx):
-        text = (self.tokenizer.encode(self.tokenizer.pad_token) * self.token_size)
+        text = (self.tokenizer.encode(self.tokenizer.pad_token) * self.token_size)[:self.token_size]
         content = self.ds[idx]['document'] + self.tokenizer.encode(self.tokenizer.sep_token) + self.ds[idx]['summary']
         text[:len(content)] = content
         text = torch.tensor(text)

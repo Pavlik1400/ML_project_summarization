@@ -1,0 +1,70 @@
+{
+    "CourpusPreprocessor(strong)": {
+        "TextRank": {
+            "<src.metrics.GloVeCosineSimilarity.GloveCosineSimilarity object at 0x7fad74e615b0>": 0.9223379952117766
+        },
+        "LexRank": {
+            "<src.metrics.GloVeCosineSimilarity.GloveCosineSimilarity object at 0x7fad74e615b0>": 0.9145186338167379
+        },
+        "Lsa": {
+            "<src.metrics.GloVeCosineSimilarity.GloveCosineSimilarity object at 0x7fad74e615b0>": 0.9199417866029133
+        },
+        "Luhn": {
+            "<src.metrics.GloVeCosineSimilarity.GloveCosineSimilarity object at 0x7fad74e615b0>": 0.9212211488063488
+        },
+        "KL": {
+            "<src.metrics.GloVeCosineSimilarity.GloveCosineSimilarity object at 0x7fad74e615b0>": 0.9162862563625689
+        }
+    },
+    "CourpusPreprocessor(mid)": {
+        "TextRank": {
+            "<src.metrics.GloVeCosineSimilarity.GloveCosineSimilarity object at 0x7fad74e615b0>": 0.9642971588510145
+        },
+        "LexRank": {
+            "<src.metrics.GloVeCosineSimilarity.GloveCosineSimilarity object at 0x7fad74e615b0>": 0.9637104898574087
+        },
+        "Lsa": {
+            "<src.metrics.GloVeCosineSimilarity.GloveCosineSimilarity object at 0x7fad74e615b0>": 0.9591154715457639
+        },
+        "Luhn": {
+            "<src.metrics.GloVeCosineSimilarity.GloveCosineSimilarity object at 0x7fad74e615b0>": 0.9648621010475277
+        },
+        "KL": {
+            "<src.metrics.GloVeCosineSimilarity.GloveCosineSimilarity object at 0x7fad74e615b0>": 0.959326922332254
+        }
+    },
+    "CourpusPreprocessor(simple)": {
+        "TextRank": {
+            "<src.metrics.GloVeCosineSimilarity.GloveCosineSimilarity object at 0x7fad74e615b0>": 0.9638819213923664
+        },
+        "LexRank": {
+            "<src.metrics.GloVeCosineSimilarity.GloveCosineSimilarity object at 0x7fad74e615b0>": 0.9636250815622147
+        },
+        "Lsa": {
+            "<src.metrics.GloVeCosineSimilarity.GloveCosineSimilarity object at 0x7fad74e615b0>": 0.9584050055881076
+        },
+        "Luhn": {
+            "<src.metrics.GloVeCosineSimilarity.GloveCosineSimilarity object at 0x7fad74e615b0>": 0.9650520478365544
+        },
+        "KL": {
+            "<src.metrics.GloVeCosineSimilarity.GloveCosineSimilarity object at 0x7fad74e615b0>": 0.9592439981662233
+        }
+    },
+    "CourpusPreprocessor(nothing)": {
+        "TextRank": {
+            "<src.metrics.GloVeCosineSimilarity.GloveCosineSimilarity object at 0x7fad74e615b0>": 0.9646427703462745
+        },
+        "LexRank": {
+            "<src.metrics.GloVeCosineSimilarity.GloveCosineSimilarity object at 0x7fad74e615b0>": 0.964222190008423
+        },
+        "Lsa": {
+            "<src.metrics.GloVeCosineSimilarity.GloveCosineSimilarity object at 0x7fad74e615b0>": 0.9601505125656157
+        },
+        "Luhn": {
+            "<src.metrics.GloVeCosineSimilarity.GloveCosineSimilarity object at 0x7fad74e615b0>": 0.965693064039443
+        },
+        "KL": {
+            "<src.metrics.GloVeCosineSimilarity.GloveCosineSimilarity object at 0x7fad74e615b0>": 0.9608362808068414
+        }
+    }
+}

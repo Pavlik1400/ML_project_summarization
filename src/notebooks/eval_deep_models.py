@@ -81,7 +81,7 @@ def main(args):
             ds = json.load(f)['test'][:args.size]
     else:
         with open(args.ds_path, 'rb') as f:
-            ds = pickle.load(f)['test'][:args.size]
+            ds = pickle.load(f)['train'][-args.size:]
 
     pred_summaries = generate_summaries(ds, tokenizer, model,
                                         length=args.length, temperature=args.temp, top_k=args.top_k, top_p=args.top_p,
@@ -103,8 +103,8 @@ if __name__ == '__main__':
     parser.add_argument("--size", type=int, default=None, help="clip test ds")
     parser.add_argument("--save_path", type=str, required=True)
     parser.add_argument("--device", type=str, default="cuda")
-    parser.add_argument("--top_k", type=int, default=10)
-    parser.add_argument("--top_p", type=float, default=0.5)
+    parser.add_argument("--top_k", type=int, default=25)        # gpt 10K -  20
+    parser.add_argument("--top_p", type=float, default=0.9)     # gpt 10K - 0.9
     parser.add_argument("--temp", type=float, default=0.8)
     parser.add_argument("--length", type=int, help="length of summary. If None, then takes length of true summary "
                                                    "(kinda cheating)")
