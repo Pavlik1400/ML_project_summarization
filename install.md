@@ -1,4 +1,5 @@
-Libs:
+
+<!-- Libs:
 - [torch + cuda](https://pytorch.org/get-started/locally/)
   - `pip3 install torch torchvision torchaudio`
   - `conda install pytorch torchvision torchaudio cudatoolkit=10.2 -c pytorch`
@@ -24,4 +25,4 @@ Libs:
   - `pip install tqdm`
 - matplotlib
  - `conda install -c conda-forge matplotlib`
- - `pip install matplotlib`
+ - `pip install matplotlib` -->
